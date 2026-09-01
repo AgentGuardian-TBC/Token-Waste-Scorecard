@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Token Waste Scorecard - Agent Guardian</title>
+  <style>
+    :root {
+      --bg: #0e1116;
+      --card: #171b22;
+      --ink: #f3f1ea;
+      --muted: #b7b3a8;
+      --line: #2a303a;
+      --accent: #e8c36a;
+      --accent-ink: #1a1406;
+      --bad: #d97a6c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+    }
+    .container { max-width: 720px; margin: 0 auto; padding: 20px; }
+    header { padding: 40px 0 20px; }
+    .eyebrow {
+      font-family: system-ui, sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: var(--accent);
+      margin: 0 0 12px;
+    }
+    h1 { font-size: 34px; line-height: 1.15; margin: 0 0 14px; }
+    h2 { font-size: 24px; margin: 20px 0 10px; }
+    p { color: var(--muted); }
+    .lead { font-size: 18px; color: var(--ink); }
+    .btn {
+      background: var(--accent);
+      color: var(--accent-ink);
+      border: 0;
+      padding: 14px 22px;
+      font-size: 16px;
+      font-family: system-ui, sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .btn:disabled { opacity: 0.5; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 22px;
+      margin: 18px 0;
+      border-radius: 8px;
+    }
+    .bullets { padding-left: 18px; }
+    .bullets li { margin: 8px 0; color: var(--muted); }
+    .q { margin: 0 0 18px; }
+    .q p { color: var(--ink); margin: 0 0 10px; font-size: 17px; }
+    .scale { display: flex; gap: 8px; flex-wrap: wrap; }
+    .scale label {
+      font-family: system-ui, sans-serif;
+      font-size: 13px;
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .field { display: block; font-family: system-ui, sans-serif; font-size: 13px; margin: 12px 0 6px; color: var(--muted); }
+    input[type="email"], input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 4px;
+      border: 1px solid var(--line);
+      background: #10141a;
+      color: var(--ink);
+      font-size: 16px;
+    }
+    .micro { font-family: system-ui, sans-serif; font-size: 12px; }
+    .score { font-size: 56px; margin: 8px 0; color: var(--accent); font-weight: 700; }
+    .hidden { display: none; }
+    footer { padding: 40px 0; font-family: system-ui, sans-serif; font-size: 12px; color: #7d7a72; border-top: 1px solid var(--line); margin-top: 40px; }
+    .cat { display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); padding: 8px 0; font-size: 15px; }
+    .cat.weak { color: var(--bad); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <p class="eyebrow">Agent Guardian - Free 3-minute diagnostic</p>
+      <h1>Your agents are not expensive. Your leaks are.</h1>
+      <p class="lead">Answer 15 questions. See which pipe is open and get the first fix.</p>
+    </header>
+
+    <main id="land">
+      <button class="btn" onclick="startQuiz()">Find my leak</button>
+      <p class="micro">No credit card. About 3 minutes. You get a score and a next step.</p>
+      <div class="card">
+        <ul class="bullets">
+          <li>Built for people running agents</li>
+          <li>Names the leak. No lectures.</li>
+          <li>Pairs with Agent Guardian when ready</li>
+        </ul>
+      </div>
+    </main>
+
+    <main id="quiz" class="hidden">
+      <p class="eyebrow" id="progress"></p>
+      <div class="q">
+        <p id="question"></p>
+        <div class="scale" id="scale"></div>
+      </div>
+      <button class="btn" onclick="nextQuestion()">Next</button>
+    </main>
+
+    <main id="gate" class="hidden">
+      <h2>Your score is ready</h2>
+      <label class="field">First name (optional)</label>
+      <input id="name" type="text">
+      <label class="field">Email</label>
+      <input id="email" type="email" required>
+      <p></p>
+      <button class="btn" onclick="showResults()">Show my leak</button>
+    </main>
+
+    <main id="results" class="hidden">
+      <div class="score" id="score"></div>
+      <p class="lead" id="weakLine"></p>
+      <p id="band"></p>
+      <div class="card" id="cats"></div>
+      <div class="card" id="weakCopy"></div>
+      <h2>Ready for the lock?</h2>
+      <a class="btn" href="https://agentguardian.dev">Join the list</a>
+    </main>
+
+    <footer>Agent Guardian - Token Waste Scorecard</footer>
+  </div>
+
+  <script>
+    const QUESTIONS = [
+      ["Visibility", "I can tell this week how many dollars I spent on AI tokens by project."],
+      ["Visibility", "I know which model or agent is responsible for most spending."],
+      ["Visibility", "I have a simple number I check instead of surprises."],
+      ["Caps", "Every key has a hard spend or token limit."],
+      ["Caps", "Looping agents or fat prompts hit a wall, not my card."],
+      ["Caps", "I can kill a runaway job in under two minutes."],
+      ["Routing", "I use cheap/fast by default and escalate when needed."],
+      ["Routing", "I have a rule for what good enough means."],
+      ["Routing", "I cache answers instead of paying full price every time."],
+      ["Agent waste", "My agents have max steps, tool calls, or retries."],
+      ["Agent waste", "I strip context before sending a job."],
+      ["Agent waste", "I batch work instead of starting fresh threads."],
+      ["Habits", "I treat AI spend like a budget line."],
+      ["Habits", "Before a long run, I estimate what it costs."],
+      ["Habits", "When it costs more, I look at why first."]
+    ];
+
+    const COPY = {
+      Visibility: "You cannot manage a bill you cannot see. First fix: pick one number you check weekly.",
+      Caps: "You have access but no brakes. First fix: hard spend limit on every key.",
+      Routing: "You pay high prices for easy work. First fix: list tasks that need expensive models.",
+      "Agent waste": "Extra steps beat high prices. First fix: set max steps and strip context.",
+      Habits: "Tokens feel free until they are not. First fix: estimate before you run."
+    };
+
+    let answers = [];
+    let currentQ = 0;
+
+    function startQuiz() {
+      document.getElementById('land').classList.add('hidden');
+      document.getElementById('quiz').classList.remove('hidden');
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const [cat, text] = QUESTIONS[currentQ];
+      document.getElementById('progress').textContent = `Question ${currentQ + 1} of 15 - ${cat}`;
+      document.getElementById('question').textContent = text;
+      
+      const scale = document.getElementById('scale');
+      scale.innerHTML = '';
+      for (let n = 1; n <= 5; n++) {
+        const label = document.createElement('label');
+        label.innerHTML = `<input type="radio" name="ans" value="${n}"> ${n}`;
+        scale.appendChild(label);
+      }
+    }
+
+    function nextQuestion() {
+      const picked = document.querySelector('input[name="ans"]:checked');
+      if (!picked) { alert('Pick 1 to 5'); return; }
+      
+      answers[currentQ] = parseInt(picked.value);
+      
+      if (currentQ < 14) {
+        currentQ++;
+        renderQuestion();
+      } else {
+        document.getElementById('quiz').classList.add('hidden');
+        document.getElementById('gate').classList.remove('hidden');
+      }
+    }
+
+    function showResults() {
+      const email = document.getElementById('email').value.trim();
+      if (!email || !email.includes('@')) { alert('Need email'); return; }
+
+      const avg = arr => arr.reduce((a, b) => a + b, 0) / arr.length;
+      const cats = {
+        Visibility: answers.slice(0, 3),
+        Caps: answers.slice(3, 6),
+        Routing: answers.slice(6, 9),
+        "Agent waste": answers.slice(9, 12),
+        Habits: answers.slice(12, 15)
+      };
+
+      const scores = {};
+      Object.keys(cats).forEach(k => { scores[k] = avg(cats[k]); });
+      const overall = avg(answers);
+
+      let weakest = 'Caps';
+      Object.keys(scores).forEach(k => { if (scores[k] < scores[weakest]) weakest = k; });
+
+      document.getElementById('gate').classList.add('hidden');
+      document.getElementById('results').classList.remove('hidden');
+      document.getElementById('score').textContent = overall.toFixed(1) + ' / 5';
+      document.getElementById('weakLine').textContent = 'Weakest: ' + weakest + '. Fix that first.';
+
+      const cats_html = Object.keys(scores).map(k => `<div class="cat ${k === weakest ? 'weak' : ''}"><span>${k}</span><span>${scores[k].toFixed(1)}</span></div>`).join('');
+      document.getElementById('cats').innerHTML = cats_html;
+      document.getElementById('weakCopy').innerHTML = `<h2>${weakest}</h2><p>${COPY[weakest]}</p>`;
+    }
+  </script>
+</body>
+</html>
